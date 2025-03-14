@@ -295,11 +295,19 @@ download_sing-box() {
 #dwonload  config examples,this should be called when dowanload sing-box
 download_config() {
     LOGD "开始下载sing-box配置模板..."
+    # 默认配置文件路径
+    local config_path="socks5/config.json"
+    # 如果传入了参数，则使用参数作为配置文件路径
+    if [[ $# -eq 1 && -n "$1" ]]; then
+        config_path="$1"
+    fi
+    LOGI "将使用配置模板: ${config_path}"
+    
     if [[ ! -d ${CONFIG_FILE_PATH} ]]; then
         mkdir -p ${CONFIG_FILE_PATH}
     fi
     if [[ ! -f "${CONFIG_FILE_PATH}/config.json" ]]; then
-        wget --no-check-certificate -O ${CONFIG_FILE_PATH}/config.json https://raw.githubusercontent.com/hongyeyecw/sing-box-yes/main/socks5/config.json
+        wget --no-check-certificate -O ${CONFIG_FILE_PATH}/config.json https://raw.githubusercontent.com/hongyeyecw/sing-box-yes/main/${config_path}
         if [[ $? -ne 0 ]]; then
             LOGE "下载sing-box配置模板失败,请检查网络"
             exit 1
@@ -344,7 +352,7 @@ install_sing-box() {
     else
         download_sing-box
     fi
-    download_config
+    download_config $2
     if [[ ! -f "${DOWNLAOD_PATH}/sing-box-${SING_BOX_VERSION}-linux-${OS_ARCH}.tar.gz" ]]; then
         clear_sing_box
         LOGE "could not find sing-box packages,plz check dowanload sing-box whether suceess"
@@ -781,7 +789,9 @@ main() {
             fi
             ;;
         "install")
-            if [[ $# == 2 ]]; then
+            if [[ $# == 3 ]]; then
+                install_sing-box $2 $3
+            elif [[ $# == 2 ]]; then
                 install_sing-box $2
             else
                 install_sing-box
