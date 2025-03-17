@@ -27,7 +27,7 @@ OS_ARCH=''
 SING_BOX_VERSION=''
 
 #script version
-SING_BOX_YES_VERSION='0.0.7'
+SING_BOX_YES_VERSION='0.0.8'
 
 #package download path
 DOWNLAOD_PATH='/usr/local/sing-box'
@@ -96,6 +96,7 @@ confirm() {
 
 #System check
 os_check() {
+    LOGI "当前软件版本号:${SING_BOX_YES_VERSION}"
     LOGI "检测当前系统中..."
     if [[ -f /etc/redhat-release ]]; then
         OS_RELEASE="centos"
@@ -382,20 +383,22 @@ install_sing-box() {
     else
         LOGI "install sing-box suceess"
     fi
-    install_systemd_service && enable_sing-box && start_sing-box
     
-    # 安装成功后自动生成TLS密钥对
-    LOGI "安装sing-box成功,已启动成功"
+
     LOGI "现在将自动生成TLS密钥对..."
-    
     # 传递第三个参数作为域名，如果没有则使用默认值
     local domain="me.com"
     if [[ $# -ge 3 && -n "$3" ]]; then
         domain="$3"
     fi
-    
     # 生成TLS密钥对
     generate_tls_keypair "${domain}"
+
+    install_systemd_service && enable_sing-box && start_sing-box
+    
+    # 安装成功后自动生成TLS密钥对
+    LOGI "安装sing-box成功,已启动成功"
+   
 }
 
 #update sing-box
