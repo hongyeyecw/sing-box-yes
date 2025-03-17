@@ -27,7 +27,7 @@ OS_ARCH=''
 SING_BOX_VERSION=''
 
 #script version
-SING_BOX_YES_VERSION='0.0.4'
+SING_BOX_YES_VERSION='0.0.6'
 
 #package download path
 DOWNLAOD_PATH='/usr/local/sing-box'
@@ -40,6 +40,9 @@ CONFIG_FILE_PATH='/usr/local/etc/sing-box'
 
 #binary install path
 BINARY_FILE_PATH='/usr/local/bin/sing-box'
+
+#cert file path
+CERT_FILE_PATH='/etc/sing-box'
 
 #scritp install path
 SCRIPT_FILE_PATH='/usr/local/sbin/sing-box'
@@ -643,6 +646,76 @@ ssl_cert_issue() {
     bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/BashScripts/main/SSLAutoInstall/SSLAutoInstall.sh)
 }
 
+#generate TLS key pair
+generate_tls_keypair() {
+    LOGD "开始生成TLS密钥对..."
+    domain="me.com"
+    expire_months=120
+    
+    # 如果传入了参数，使用参数作为域名
+    if [[ $# -ge 1 && -n "$1" ]]; then
+        domain="$1"
+    fi
+    
+    # 如果传入了第二个参数，使用其作为有效期（月）
+    if [[ $# -ge 2 && -n "$2" ]]; then
+        expire_months="$2"
+    fi
+    
+    # 检查sing-box是否已安装
+    if [[ ! -f "${BINARY_FILE_PATH}" ]]; then
+        LOGE "sing-box未安装，无法生成TLS密钥对"
+        return 1
+    fi
+    
+    # 确保证书目录存在
+    if [[ ! -d "${CERT_FILE_PATH}" ]]; then
+        mkdir -p ${CERT_FILE_PATH}
+        if [[ $? -ne 0 ]]; then
+            LOGE "创建证书目录 ${CERT_FILE_PATH} 失败"
+            return 1
+        fi
+    fi
+    
+    LOGI "将为域名 ${domain} 生成有效期为 ${expire_months} 个月的TLS密钥对"
+    
+    # 执行sing-box命令生成TLS密钥对
+    result=$(${BINARY_FILE_PATH} generate tls-keypair ${domain} -m ${expire_months})
+    if [[ $? -ne 0 ]]; then
+        LOGE "生成TLS密钥对失败，请检查sing-box日志"
+        return 1
+    fi
+    
+    # 提取私钥部分
+    private_key=$(echo "${result}" | awk '/BEGIN PRIVATE KEY/,/END PRIVATE KEY/')
+    
+    # 提取证书部分
+    certificate=$(echo "${result}" | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/')
+    
+    # 保存私钥
+    echo "${private_key}" > ${CERT_FILE_PATH}/private.key
+    if [[ $? -ne 0 ]]; then
+        LOGE "保存私钥到 ${CERT_FILE_PATH}/private.key 失败"
+        return 1
+    fi
+    
+    # 保存证书
+    echo "${certificate}" > ${CERT_FILE_PATH}/fullchain.crt
+    if [[ $? -ne 0 ]]; then
+        LOGE "保存证书到 ${CERT_FILE_PATH}/fullchain.crt 失败"
+        return 1
+    fi
+    
+    # 设置正确的权限
+    chmod 600 ${CERT_FILE_PATH}/private.key
+    chmod 644 ${CERT_FILE_PATH}/fullchain.crt
+    
+    LOGI "TLS密钥对生成成功！"
+    LOGI "私钥文件位置: ${CERT_FILE_PATH}/private.key"
+    LOGI "证书文件位置: ${CERT_FILE_PATH}/fullchain.crt"
+    return 0
+}
+
 #show help
 show_help() {
     echo "sing-box-v${SING_BOX_YES_VERSION} 管理脚本使用方法: "
@@ -659,6 +732,7 @@ show_help() {
     echo "sing-box update       - 更新 sing-box 服务"
     echo "sing-box install      - 安装 sing-box 服务"
     echo "sing-box uninstall    - 卸载 sing-box 服务"
+    echo "sing-box tls-keypair  - 生成 TLS 密钥对"
     echo "------------------------------------------"
 }
 
@@ -686,9 +760,10 @@ show_menu() {
 ————————————————
   ${green}F.${plain} 一键开启 bbr 
   ${green}G.${plain} 一键申请SSL证书
+  ${green}H.${plain} 生成 TLS 密钥对
  "
     show_status
-    echo && read -p "请输入选择[0-G]:" num
+    echo && read -p "请输入选择[0-H]:" num
 
     case "${num}" in
     0)
@@ -742,8 +817,11 @@ show_menu() {
     G)
         ssl_cert_issue
         ;;
+    H)
+        generate_tls_keypair && show_menu
+        ;;
     *)
-        LOGE "请输入正确的选项 [0-G]"
+        LOGE "请输入正确的选项 [0-H]"
         ;;
     esac
 }
@@ -799,6 +877,15 @@ main() {
             ;;
         "uninstall")
             uninstall_sing-box
+            ;;
+        "tls-keypair")
+            if [[ $# == 3 ]]; then
+                generate_tls_keypair $2 $3
+            elif [[ $# == 2 ]]; then
+                generate_tls_keypair $2
+            else
+                generate_tls_keypair
+            fi
             ;;
         *) show_help ;;
         esac

@@ -11,6 +11,36 @@
                     "password": "socksssockss"
                 }
             ]
+        },
+        {
+            "type": "http",
+            "tag": "http-in",
+            "listen": "::",
+            "listen_port": 8081,
+            "users": [
+                {
+                    "username": "sockss",
+                    "password": "socksssockss"
+                }
+            ]
+        },
+        {
+            "type": "https",
+            "tag": "https-in",
+            "listen": "::",
+            "listen_port": 8443,
+            "users": [
+                {
+                    "username": "sockss",
+                    "password": "socksssockss"
+                }
+            ],
+            "tls": {
+                "enabled": true,
+                "server_name": "me.com",
+                "certificate_path": "/etc/sing-box/fullchain.crt",
+                "key_path": "/etc/sing-box/private.key"
+            }
         }
     ],
     "outbounds": [
