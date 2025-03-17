@@ -27,7 +27,7 @@ OS_ARCH=''
 SING_BOX_VERSION=''
 
 #script version
-SING_BOX_YES_VERSION='0.0.6'
+SING_BOX_YES_VERSION='0.0.7'
 
 #package download path
 DOWNLAOD_PATH='/usr/local/sing-box'
