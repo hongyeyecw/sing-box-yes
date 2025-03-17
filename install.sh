@@ -383,7 +383,19 @@ install_sing-box() {
         LOGI "install sing-box suceess"
     fi
     install_systemd_service && enable_sing-box && start_sing-box
+    
+    # 安装成功后自动生成TLS密钥对
     LOGI "安装sing-box成功,已启动成功"
+    LOGI "现在将自动生成TLS密钥对..."
+    
+    # 传递第三个参数作为域名，如果没有则使用默认值
+    local domain="me.com"
+    if [[ $# -ge 3 && -n "$3" ]]; then
+        domain="$3"
+    fi
+    
+    # 生成TLS密钥对
+    generate_tls_keypair "${domain}"
 }
 
 #update sing-box
@@ -731,8 +743,10 @@ show_help() {
     echo "sing-box clear        - 清除 sing-box 日志"
     echo "sing-box update       - 更新 sing-box 服务"
     echo "sing-box install      - 安装 sing-box 服务"
+    echo "sing-box install [版本] [配置] [域名] - 安装并指定域名的TLS证书"
     echo "sing-box uninstall    - 卸载 sing-box 服务"
     echo "sing-box tls-keypair  - 生成 TLS 密钥对"
+    echo "sing-box tls-keypair [域名] [有效期] - 指定域名和有效期"
     echo "------------------------------------------"
 }
 
@@ -867,7 +881,9 @@ main() {
             fi
             ;;
         "install")
-            if [[ $# == 3 ]]; then
+            if [[ $# == 4 ]]; then
+                install_sing-box $2 $3 $4
+            elif [[ $# == 3 ]]; then
                 install_sing-box $2 $3
             elif [[ $# == 2 ]]; then
                 install_sing-box $2

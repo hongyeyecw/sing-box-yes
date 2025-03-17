@@ -13,7 +13,7 @@
             ]
         },
         {
-            "type": "http",
+            "type": "mixed",
             "tag": "http-in",
             "listen": "::",
             "listen_port": 8081,
@@ -22,7 +22,9 @@
                     "username": "sockss",
                     "password": "socksssockss"
                 }
-            ]
+            ],
+            "tls": {},
+            "set_system_proxy": false
         },
         {
             "type": "http",
