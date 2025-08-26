@@ -300,7 +300,7 @@ download_sing-box() {
 download_config() {
     LOGD "开始下载sing-box配置模板..."
     # 默认配置文件路径
-    local config_path="socks5/config.json"
+    local config_path="vmess/server_config.json"
     # 如果传入了参数，则使用参数作为配置文件路径
     if [[ $# -eq 1 && -n "$1" ]]; then
         config_path="$1"
