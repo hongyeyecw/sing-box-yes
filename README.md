@@ -41,6 +41,14 @@ bash <(curl -Ls https://raw.githubusercontent.com/hongyeyecw/sing-box-yes/refs/h
 如果你想安装某个特定版本(包括Pre-release),请使用以下命令,将`1.1-beta8`替换为特定版本号即可    
 ```
 bash <(curl -Ls https://raw.githubusercontent.com/FranzKafkaYu/sing-box-yes/master/install.sh) install 1.1-beta8
+# 安装最新版本，使用 vless 配置，域名为 example.com
+bash install.sh install "" vless/server_config.json example.com
+
+# 安装 1.8.0 版本，使用 trojan 配置
+bash install.sh install 1.8.0 trojan/server_config.json
+
+# 已安装后，可以使用简化命令
+sing-box install 1.8.0 vless/server_config.json example.com
 ```  
 如果在安装后想更新到最新的release版本,且保留原有的配置文件,请使用如下命令或通过菜单选项`2`进行更新  
 ```
@@ -151,6 +159,7 @@ sing-box run -c client_config.json
 # star:star2:
 
 [![Stargazers over time](https://starchart.cc/FranzKafkaYu/sing-box-yes.svg)](https://starchart.cc/FranzKafkaYu/sing-box-yes)
+
 
 
 
